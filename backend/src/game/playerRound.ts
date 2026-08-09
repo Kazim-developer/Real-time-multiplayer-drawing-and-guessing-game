@@ -1,5 +1,5 @@
-import { redis } from "./client.js";
-import { getAllPlayers, PLAYER_KEY } from "./playerState.js";
+import { redis } from "../redis/client.js";
+import { getAllPlayers, PLAYER_KEY } from "../redis/playerState.js";
 
 const ROUND_PLAYERS_KEY = "game:round:players";
 

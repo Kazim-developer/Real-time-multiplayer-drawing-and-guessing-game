@@ -28,18 +28,23 @@ export default function PlayerList() {
   }, []);
 
   return (
-    <div>
-      <h2 className="text-2xl">Players</h2>
+    <div className="bg-white border-1 border-gray-500 rounded-md p-4 h-[80vh] max-h-[80vh] overflow-y-auto">
+      <h2 className="text-2xl mb-2">Players</h2>
 
-      {players.map((player) => (
-        <div key={player.socketId} className="flex items-center gap-4 border-1">
-          <span className="font-bold"># {player.id}</span>
-          <div className="flex flex-col items-center">
-            <span>{player.username}</span>
-            <span>Points: {player.score}</span>
+      <div className="flex flex-col gap-2">
+        {players.map((player) => (
+          <div
+            key={player.socketId}
+            className="flex items-center gap-5 border-1 border-gray-300 rounded-md p-2"
+          >
+            <span className="font-bold"># {player.id}</span>
+            <div className="flex flex-col items-center">
+              <span>{player.username}</span>
+              <span>Points: {player.score}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

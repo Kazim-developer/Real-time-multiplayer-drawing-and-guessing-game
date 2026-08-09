@@ -1,4 +1,4 @@
-import { redis } from "./client.js";
+import { redis } from "../redis/client.js";
 
 const GAME_STATE_KEY = "game:state";
 

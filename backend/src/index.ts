@@ -2,7 +2,13 @@ import express from "express";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
 import { redis } from "./redis/client.js";
-import { addPlayer, getAllPlayers, removePlayer } from "./redis/playerState.js";
+import {
+  addPlayer,
+  getAllPlayers,
+  PLAYER_KEY,
+  removePlayer,
+} from "./redis/playerState.js";
+import { getTurnEndsAt } from "./game/gameState.js";
 
 const app = express();
 
@@ -39,6 +45,24 @@ io.on("connection", async (socket) => {
     const players = await getAllPlayers();
 
     socket.emit("players:update", players);
+  });
+
+  socket.on("guess-word", async ({ guess }) => {
+    const word = await redis.get("game:turn:word");
+
+    if (!word) return;
+
+    const turnEndsAt = await getTurnEndsAt();
+
+    const now = Date.now();
+
+    const remainingTime = Math.max(0, Number(turnEndsAt) - now);
+
+    const score = Math.floor(100 * (remainingTime / 60000));
+
+    if (guess.trim().toLowerCase() === word.trim().toLowerCase()) {
+      await redis.hset(PLAYER_KEY(socket.id), { score });
+    }
   });
 
   socket.on("disconnect", async () => {

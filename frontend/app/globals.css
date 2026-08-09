@@ -14,4 +14,11 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #f7f7f5;
+}
+
+.center-content {
+  width: 90%;
+  margin: 1rem auto;
+  max-width: 1200px;
 }
