@@ -6,21 +6,16 @@ import { socket } from "@/lib/socket";
 type Player = {
   id: string;
   username: string;
+  socketId: string;
+  score: number;
 };
 
 export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    const handlePlayersUpdate = (playersObject: Record<string, string>) => {
-      const playersArray = Object.entries(playersObject).map(
-        ([id, username]) => ({
-          id,
-          username,
-        }),
-      );
-
-      setPlayers(playersArray);
+    const handlePlayersUpdate = (playersObject: Player[]) => {
+      setPlayers(playersObject);
     };
 
     socket.on("players:update", handlePlayersUpdate);
@@ -34,10 +29,16 @@ export default function PlayerList() {
 
   return (
     <div>
-      <h2>Players</h2>
+      <h2 className="text-2xl">Players</h2>
 
       {players.map((player) => (
-        <div key={player.id}>{player.username}</div>
+        <div key={player.socketId} className="flex items-center gap-4 border-1">
+          <span className="font-bold"># {player.id}</span>
+          <div className="flex flex-col items-center">
+            <span>{player.username}</span>
+            <span>Points: {player.score}</span>
+          </div>
+        </div>
       ))}
     </div>
   );

@@ -1,15 +1,40 @@
 import { redis } from "./client.js";
 
-const PLAYERS_KEY = "game:players";
+const GAME_STATE_KEY = "game:state";
 
-export async function addPlayer(socketId: string, username: string) {
-  await redis.hset(PLAYERS_KEY, socketId, username);
+export async function initializeGame() {
+  const exists = await redis.exists(GAME_STATE_KEY);
+
+  if (!exists) {
+    await redis.hset(GAME_STATE_KEY, {
+      status: "waiting",
+      round: 0,
+      turnEndsAt: 0,
+      currentDrawerId: "",
+    });
+  }
 }
 
-export async function removePlayer(socketId: string) {
-  await redis.hdel(PLAYERS_KEY, socketId);
+export async function getGameState() {
+  return await redis.hgetall(GAME_STATE_KEY);
 }
 
-export async function getPlayers() {
-  return await redis.hgetall(PLAYERS_KEY);
+export async function updateGameState(state: Record<string, string | number>) {
+  await redis.hset(GAME_STATE_KEY, state);
+}
+
+export async function getGameStatus() {
+  return await redis.hget(GAME_STATE_KEY, "status");
+}
+
+export async function getCurrentDrawerId() {
+  return await redis.hget(GAME_STATE_KEY, "currentDrawerId");
+}
+
+export async function getCurrentRound() {
+  return await redis.hget(GAME_STATE_KEY, "round");
+}
+
+export async function getTurnEndsAt() {
+  return await redis.hget(GAME_STATE_KEY, "turnEndsAt");
 }

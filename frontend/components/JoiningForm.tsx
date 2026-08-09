@@ -72,7 +72,7 @@ export default function JoiningForm() {
                 lineHeight: 1.5,
               }}
             >
-              We will join the game with this name
+              You will join the game with this name
             </p>
 
             <input

@@ -2,7 +2,7 @@ import express from "express";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
 import { redis } from "./redis/client.js";
-import { addPlayer, getPlayers, removePlayer } from "./redis/gameState.js";
+import { addPlayer, getAllPlayers, removePlayer } from "./redis/playerState.js";
 
 const app = express();
 
@@ -26,7 +26,7 @@ io.on("connection", async (socket) => {
 
   await addPlayer(socket.id, username);
 
-  const players = await getPlayers();
+  const players = await getAllPlayers();
 
   socket.broadcast.emit("players:update", players);
 
@@ -36,7 +36,7 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("players:get", async () => {
-    const players = await getPlayers();
+    const players = await getAllPlayers();
 
     socket.emit("players:update", players);
   });
@@ -46,7 +46,9 @@ io.on("connection", async (socket) => {
 
     await removePlayer(socket.id);
 
-    const players = await getPlayers();
+    await redis.decr("player:id");
+
+    const players = await getAllPlayers();
 
     io.emit("players:update", players);
   });
