@@ -1,5 +1,5 @@
 import { redis } from "../redis/client.js";
-import { getAllPlayers, PLAYER_KEY } from "../redis/playerState.js";
+import { getAllPlayers } from "../redis/playerState.js";
 
 const ROUND_PLAYERS_KEY = "game:round:players";
 
@@ -23,4 +23,8 @@ export async function getNextDrawingPlayer() {
   const playerSocketId = await redis.lpop(ROUND_PLAYERS_KEY);
 
   return playerSocketId;
+}
+
+export async function clearRoundPlayers() {
+  await redis.del(ROUND_PLAYERS_KEY);
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { socket } from "@/lib/socket";
+import PenIcon from "./PenIcon";
 
 type Player = {
   id: string;
@@ -10,7 +11,7 @@ type Player = {
   score: number;
 };
 
-export default function PlayerList() {
+export default function PlayerList({ drawerId }: { drawerId: string }) {
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function PlayerList() {
               <span>{player.username}</span>
               <span>Points: {player.score}</span>
             </div>
+            {player.socketId === drawerId && <PenIcon />}
           </div>
         ))}
       </div>

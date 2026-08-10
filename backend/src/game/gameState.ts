@@ -2,6 +2,12 @@ import { redis } from "../redis/client.js";
 
 const GAME_STATE_KEY = "game:state";
 
+export async function setCurrentDrawerId(socketId: string) {
+  await redis.hset(GAME_STATE_KEY, {
+    currentDrawerId: socketId,
+  });
+}
+
 export async function initializeGame() {
   const exists = await redis.exists(GAME_STATE_KEY);
 
