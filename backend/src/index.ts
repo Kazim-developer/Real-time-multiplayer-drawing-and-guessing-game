@@ -13,6 +13,7 @@ import { registerDrawingEvents } from "./sockets/drawingSocket.js";
 import { tryStartGame } from "./game/gameManager.js";
 import { getCurrentDrawerId } from "./game/gameState.js";
 import { registerGameEvents } from "./sockets/gameSocket.js";
+import { getOfferedWords } from "./game/wordManager.js";
 
 const app = express();
 
@@ -58,10 +59,24 @@ io.on("connection", async (socket) => {
 
   socket.on("game:get-state", async () => {
     const currentDrawerId = await getCurrentDrawerId();
+    const endsAt = await getTurnEndsAt();
 
     socket.emit("game:drawer", {
       socketId: currentDrawerId,
     });
+
+    if (socket.id === currentDrawerId) {
+      const words = getOfferedWords();
+
+      socket.emit("word:options", words);
+    }
+
+    if (endsAt) {
+      socket.emit("turn:started", {
+        drawerId: currentDrawerId,
+        endsAt: Number(endsAt),
+      });
+    }
   });
 
   socket.on("disconnect", async () => {

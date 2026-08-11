@@ -30,17 +30,19 @@ export default function GamePage() {
     };
 
     const handleWords = (words: string[]) => {
+      console.log("Received words:", words);
       setWords(words);
     };
 
     socket.on("game:drawer", handleDrawer);
-
-    socket.emit("game:get-state");
-
     socket.on("word:options", handleWords);
+
+    // Request state only AFTER listeners exist
+    socket.emit("game:get-state");
 
     return () => {
       socket.off("game:drawer", handleDrawer);
+      socket.off("word:options", handleWords);
     };
   }, []);
 
@@ -51,26 +53,39 @@ export default function GamePage() {
   }, [isDrawer]);
 
   useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+
     const handleTurnStarted = ({ endsAt }: { endsAt: number }) => {
+      if (interval) {
+        clearInterval(interval);
+      }
+
       const updateTimer = () => {
         const remaining = Math.max(0, endsAt - Date.now());
 
         setTimeLeft(Math.ceil(remaining / 1000));
+
+        if (remaining <= 0 && interval) {
+          clearInterval(interval);
+          interval = null;
+        }
       };
 
       updateTimer();
 
-      const interval = setInterval(updateTimer, 100);
-
-      return () => {
-        clearInterval(interval);
-      };
+      interval = setInterval(updateTimer, 100);
     };
 
     socket.on("turn:started", handleTurnStarted);
 
+    socket.emit("game:get-state");
+
     return () => {
       socket.off("turn:started", handleTurnStarted);
+
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, []);
 

@@ -13,6 +13,10 @@ export function sendWordOptions(io: Server, drawerSocketId: string) {
   console.log("Word options:", offeredWords);
 }
 
+export function getOfferedWords() {
+  return offeredWords;
+}
+
 export function selectWord(word: string) {
   if (!offeredWords.includes(word)) {
     return false;

@@ -9,6 +9,8 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
     (s) => s.setShowWordSelectionModal,
   );
 
+  console.log(words);
+
   return (
     <ModalContainer>
       <div className="p-4 rounded-md bg-white">
