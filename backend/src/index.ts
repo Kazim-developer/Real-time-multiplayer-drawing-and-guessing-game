@@ -12,6 +12,7 @@ import { getTurnEndsAt } from "./game/gameState.js";
 import { registerDrawingEvents } from "./sockets/drawingSocket.js";
 import { tryStartGame } from "./game/gameManager.js";
 import { getCurrentDrawerId } from "./game/gameState.js";
+import { registerGameEvents } from "./sockets/gameSocket.js";
 
 const app = express();
 
@@ -53,6 +54,7 @@ io.on("connection", async (socket) => {
   });
 
   registerDrawingEvents(io, socket);
+  registerGameEvents(io, socket);
 
   socket.on("game:get-state", async () => {
     const currentDrawerId = await getCurrentDrawerId();
@@ -72,21 +74,3 @@ io.on("connection", async (socket) => {
     io.emit("players:update", players);
   });
 });
-
-// socket.on("guess-word", async ({ guess }) => {
-//   const word = await redis.get("game:turn:word");
-
-//   if (!word) return;
-
-//   const turnEndsAt = await getTurnEndsAt();
-
-//   const now = Date.now();
-
-//   const remainingTime = Math.max(0, Number(turnEndsAt) - now);
-
-//   const score = Math.floor(100 * (remainingTime / 60000));
-
-//   if (guess.trim().toLowerCase() === word.trim().toLowerCase()) {
-//     await redis.hset(PLAYER_KEY(socket.id), { score });
-//   }
-// });

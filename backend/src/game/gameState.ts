@@ -42,5 +42,23 @@ export async function getCurrentRound() {
 }
 
 export async function getTurnEndsAt() {
-  return await redis.hget(GAME_STATE_KEY, "turnEndsAt");
+  return await redis.hget(GAME_STATE_KEY, "endsAt");
+}
+
+const TURN_DURATION = 60_000;
+
+export async function startTurn() {
+  const startedAt = Date.now();
+  const endsAt = startedAt + TURN_DURATION;
+
+  await redis.hset(GAME_STATE_KEY, {
+    startedAt,
+    endsAt,
+    status: "drawing",
+  });
+
+  return {
+    startedAt,
+    endsAt,
+  };
 }

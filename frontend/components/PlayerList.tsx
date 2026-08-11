@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import PenIcon from "./PenIcon";
+import { usePlayersStore } from "@/stores/playersList.store";
 
-type Player = {
+export type Player = {
   id: string;
   username: string;
   socketId: string;
   score: number;
 };
 
-export default function PlayerList({ drawerId }: { drawerId: string }) {
-  const [players, setPlayers] = useState<Player[]>([]);
+export default function PlayerList() {
+  const players = usePlayersStore((s) => s.players);
+  const setPlayers = usePlayersStore((s) => s.addPlayers);
+
+  const drawerId = usePlayersStore((s) => s.drawerId);
 
   useEffect(() => {
     const handlePlayersUpdate = (playersObject: Player[]) => {
