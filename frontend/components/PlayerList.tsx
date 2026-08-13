@@ -12,7 +12,7 @@ export type Player = {
   score: number;
 };
 
-export default function PlayerList() {
+export default function PlayerList({ round }: { round: number }) {
   const players = usePlayersStore((s) => s.players);
   const setPlayers = usePlayersStore((s) => s.addPlayers);
 
@@ -34,6 +34,7 @@ export default function PlayerList() {
 
   return (
     <div className="bg-white border-1 border-gray-500 rounded-md p-4 h-[80vh] max-h-[80vh] overflow-y-auto">
+      <h2 className="text-2xl mb-2">Round {round} of 3</h2>
       <h2 className="text-2xl mb-2">Players</h2>
 
       <div className="flex flex-col gap-2">

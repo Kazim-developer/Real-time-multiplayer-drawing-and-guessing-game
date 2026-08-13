@@ -12,6 +12,9 @@ import { useEffect, useState } from "react";
 export default function GamePage() {
   const drawerId = usePlayersStore((s) => s.drawerId);
   const setDrawerId = usePlayersStore((s) => s.setDrawerId);
+  const [currentRound, setCurrentRound] = useState<number>(0);
+
+  const players = usePlayersStore((s) => s.players);
 
   const showWordSelectionModal = useShowElementStore(
     (s) => s.showWordSelectionModal,
@@ -34,8 +37,16 @@ export default function GamePage() {
       setWords(words);
     };
 
+    const handleRound = (currentRound: number) => {
+      setCurrentRound(currentRound);
+    };
+
     socket.on("game:drawer", handleDrawer);
     socket.on("word:options", handleWords);
+
+    socket.emit("current:round");
+
+    socket.on("current:round", handleRound);
 
     // Request state only AFTER listeners exist
     socket.emit("game:get-state");
@@ -98,15 +109,17 @@ export default function GamePage() {
           </div>
           <div className="mx-auto">
             <h1>
-              {isDrawer
-                ? "Your turn, draw the word: ${word}"
-                : "Watch the drawing, and guess the word"}
+              {players.length < 2
+                ? "Waiting for 1 more player to start the game"
+                : isDrawer
+                  ? "Your turn, draw the word: ${word}"
+                  : "Watch the drawing, and guess the word"}
             </h1>
           </div>
         </div>
       </div>
       <div className="">
-        <PlayerList />
+        <PlayerList round={currentRound} />
       </div>
       <div className="col-span-2">
         <DrawingBoard isDrawer={isDrawer} />
