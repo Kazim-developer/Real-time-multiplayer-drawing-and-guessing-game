@@ -47,6 +47,10 @@ export async function tryStartGame(io: Server) {
    */
   await startRound(1);
 
+  io.emit("round:started", {
+    round: 1,
+  });
+
   /*
    * Create the queue containing every player.
    */
@@ -127,6 +131,10 @@ export async function finishCurrentRound(io: Server) {
 
     await startRound(nextRound);
 
+    io.emit("round:started", {
+      round: nextRound,
+    });
+
     await clearRoundPlayers();
     await createRoundPlayers();
 
@@ -140,6 +148,10 @@ export async function finishCurrentRound(io: Server) {
   const nextRound = currentRound + 1;
 
   await startRound(nextRound);
+
+  io.emit("round:started", {
+    round: nextRound,
+  });
 
   await clearRoundPlayers();
   await createRoundPlayers();

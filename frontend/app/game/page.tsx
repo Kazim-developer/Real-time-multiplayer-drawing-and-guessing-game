@@ -37,16 +37,14 @@ export default function GamePage() {
       setWords(words);
     };
 
-    const handleRound = (currentRound: number) => {
-      setCurrentRound(currentRound);
+    const handleRound = ({ round }: { round: number }) => {
+      setCurrentRound(round);
     };
 
     socket.on("game:drawer", handleDrawer);
     socket.on("word:options", handleWords);
 
-    socket.emit("current:round");
-
-    socket.on("current:round", handleRound);
+    socket.on("round:started", handleRound);
 
     // Request state only AFTER listeners exist
     socket.emit("game:get-state");
@@ -54,6 +52,7 @@ export default function GamePage() {
     return () => {
       socket.off("game:drawer", handleDrawer);
       socket.off("word:options", handleWords);
+      socket.off("round:started", handleRound);
     };
   }, []);
 

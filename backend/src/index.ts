@@ -106,6 +106,7 @@ async function startServer() {
       const currentDrawerId = await getCurrentDrawerId();
 
       const endsAt = await getTurnEndsAt();
+      const currentRound = await getCurrentRound();
 
       /*
        * Tell this client
@@ -113,6 +114,10 @@ async function startServer() {
        */
       socket.emit("game:drawer", {
         socketId: currentDrawerId,
+      });
+
+      socket.emit("round:started", {
+        round: Number(currentRound),
       });
 
       /*
@@ -136,12 +141,6 @@ async function startServer() {
           endsAt: Number(endsAt),
         });
       }
-    });
-
-    socket.on("current:round", async () => {
-      const currentRound = await getCurrentRound();
-
-      socket.emit("current:round", currentRound);
     });
 
     /*
