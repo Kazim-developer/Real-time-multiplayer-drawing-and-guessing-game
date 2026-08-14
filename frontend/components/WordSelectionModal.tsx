@@ -6,6 +6,8 @@ import { socket } from "@/lib/socket";
 import LineDivider from "./LineDivider";
 import { useState } from "react";
 
+const WORD_COLORS = ["#FF6B6B", "#FFC24B", "#35C4B4", "#5B5FEF"];
+
 export default function WordSelectionModal({ words }: { words: string[] }) {
   const setShowWordSelectionModal = useShowElementStore(
     (s) => s.setShowWordSelectionModal,
@@ -15,15 +17,20 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
 
   return (
     <ModalContainer>
-      <div className="p-4 rounded-md bg-white w-[50%] max-w-[500px]">
-        <h1 className="text-center mb-2 text-2xl font-bold">Your Turn</h1>
-        <h1 className="mb-2 text-xl">Choose a word</h1>
+      <div className="w-[50%] max-w-[500px] rounded-2xl border border-[#ECEDF6] bg-white p-6 shadow-[0_2px_6px_rgba(20,20,30,0.04),0_24px_60px_-24px_rgba(91,95,239,0.35)]">
+        <h1 className="mb-1 text-center text-2xl font-bold text-[#15151A]">
+          Your Turn
+        </h1>
+        <h1 className="mb-4 text-center text-sm font-medium text-[#93949F]">
+          Choose a word
+        </h1>
 
-        <div className="flex items-center gap-2 mx-auto">
-          {words.map((word) => (
+        <div className="mx-auto flex flex-wrap items-center justify-center gap-2">
+          {words.map((word, index) => (
             <button
               key={word}
-              className="border-2 p-2 border-gray-500 rounded-md cursor-pointer"
+              className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
+              style={{ background: WORD_COLORS[index % WORD_COLORS.length] }}
               onClick={() => {
                 setShowWordSelectionModal(false);
                 socket.emit("word:select", word);
@@ -34,7 +41,9 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
             </button>
           ))}
         </div>
+
         <LineDivider />
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -42,13 +51,20 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
             socket.emit("word:select", inputWord);
             socket.emit("choosing:finished");
           }}
+          className="flex gap-2"
         >
           <input
             type="text"
             placeholder="enter a custom word"
             onChange={(e) => setInputWord(e.target.value)}
+            className="min-w-0 flex-1 rounded-full border border-[#E6E7F0] bg-[#FAFAFC] px-4 py-2 text-sm text-[#15151A] outline-none transition-colors focus:border-[#5B5FEF] focus:bg-white focus:ring-4 focus:ring-[#5B5FEF]/15"
           />
-          <button type="submit">Select</button>
+          <button
+            type="submit"
+            className="shrink-0 rounded-full bg-gradient-to-br from-[#6C5CE7] via-[#5B5FEF] to-[#4A5FD1] px-5 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_-8px_rgba(91,95,239,0.55)] transition-transform hover:-translate-y-0.5 active:scale-95"
+          >
+            Select
+          </button>
         </form>
       </div>
     </ModalContainer>

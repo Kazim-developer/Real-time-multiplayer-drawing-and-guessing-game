@@ -38,27 +38,135 @@ export default function JoiningForm() {
   return (
     <div
       className="h-[100vh] w-[100%] flex justify-center items-center px-4"
-      style={{ background: "#F7F7F5" }}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        background: "#F6F7FB",
+      }}
     >
-      <div style={{ width: "100%", maxWidth: 360 }}>
+      <style>{`
+        @keyframes jfFadeUp {
+          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes jfFloatA {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(20px, -16px); }
+        }
+        @keyframes jfFloatB {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-18px, 14px); }
+        }
+        .jf-card {
+          animation: jfFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .jf-blob-a {
+          animation: jfFloatA 10s ease-in-out infinite;
+        }
+        .jf-blob-b {
+          animation: jfFloatB 12s ease-in-out infinite;
+        }
+        .jf-input::placeholder {
+          color: #B4B5C2;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .jf-card, .jf-blob-a, .jf-blob-b {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Ambient color blobs */}
+      <div
+        className="jf-blob-a"
+        style={{
+          position: "absolute",
+          top: "-10%",
+          left: "-8%",
+          width: 340,
+          height: 340,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(255,138,101,0.35) 0%, rgba(255,138,101,0) 70%)",
+          filter: "blur(10px)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        className="jf-blob-b"
+        style={{
+          position: "absolute",
+          bottom: "-14%",
+          right: "-10%",
+          width: 380,
+          height: 380,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(91,95,239,0.28) 0%, rgba(91,95,239,0) 70%)",
+          filter: "blur(10px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ width: "100%", maxWidth: 360, position: "relative" }}>
         <form onSubmit={handleJoining}>
           <div
+            className="jf-card"
             style={{
               background: "#FFFFFF",
-              border: "1px solid #EBEBE8",
-              borderRadius: 20,
-              padding: "40px 32px",
+              border: "1px solid #ECEDF6",
+              borderRadius: 24,
+              padding: "44px 34px 36px",
               boxShadow:
-                "0 2px 2px rgba(0,0,0,0.03), 0 12px 32px -12px rgba(0,0,0,0.08)",
+                "0 2px 6px rgba(20,20,30,0.04), 0 24px 60px -24px rgba(91,95,239,0.35)",
               fontFamily: "'Inter', sans-serif",
             }}
           >
+            {/* Paint-dab dot cluster */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 18,
+              }}
+            >
+              <span
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: "#FF6B6B",
+                  boxShadow: "0 2px 6px rgba(255,107,107,0.5)",
+                }}
+              />
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#FFC24B",
+                  boxShadow: "0 2px 6px rgba(255,194,75,0.5)",
+                  transform: "translateY(1px)",
+                }}
+              />
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#35C4B4",
+                  boxShadow: "0 2px 6px rgba(53,196,180,0.5)",
+                }}
+              />
+            </div>
+
             <h1
               style={{
-                fontSize: 22,
-                fontWeight: 600,
+                fontSize: 24,
+                fontWeight: 700,
                 letterSpacing: "-0.01em",
-                color: "#1C1C1E",
+                color: "#15151A",
                 margin: "0 0 6px",
               }}
             >
@@ -67,8 +175,8 @@ export default function JoiningForm() {
             <p
               style={{
                 fontSize: 14,
-                color: "#8A8A8E",
-                margin: "0 0 28px",
+                color: "#93949F",
+                margin: "0 0 26px",
                 lineHeight: 1.5,
               }}
             >
@@ -80,30 +188,32 @@ export default function JoiningForm() {
               ref={nameRef}
               required
               placeholder="Your name"
+              className="jf-input"
               style={{
                 width: "100%",
                 boxSizing: "border-box",
-                background: "#FAFAF9",
-                border: "1px solid #E2E2DF",
-                borderRadius: 12,
-                padding: "12px 14px",
+                background: "#FAFAFC",
+                border: "1px solid #E6E7F0",
+                borderRadius: 14,
+                padding: "13px 15px",
                 fontSize: 15,
-                color: "#1C1C1E",
+                color: "#15151A",
                 outline: "none",
-                marginBottom: 20,
+                marginBottom: 22,
                 fontFamily: "'Inter', sans-serif",
-                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                transition:
+                  "border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#4A5FD1";
+                e.currentTarget.style.borderColor = "#5B5FEF";
                 e.currentTarget.style.boxShadow =
-                  "0 0 0 3px rgba(74,95,209,0.12)";
+                  "0 0 0 4px rgba(91,95,239,0.14)";
                 e.currentTarget.style.background = "#FFFFFF";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "#E2E2DF";
+                e.currentTarget.style.borderColor = "#E6E7F0";
                 e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.background = "#FAFAF9";
+                e.currentTarget.style.background = "#FAFAFC";
               }}
             />
 
@@ -112,27 +222,36 @@ export default function JoiningForm() {
               style={{
                 width: "100%",
                 border: "none",
-                borderRadius: 12,
-                padding: "12px 16px",
-                background: "#1C1C1E",
+                borderRadius: 14,
+                padding: "13px 16px",
+                background:
+                  "linear-gradient(135deg, #6C5CE7 0%, #5B5FEF 55%, #4A5FD1 100%)",
                 color: "#FFFFFF",
                 fontSize: 15,
-                fontWeight: 500,
+                fontWeight: 600,
                 fontFamily: "'Inter', sans-serif",
                 cursor: "pointer",
-                transition: "background 0.15s ease, transform 0.1s ease",
+                boxShadow: "0 10px 24px -8px rgba(91,95,239,0.55)",
+                transition:
+                  "transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#33333A";
+                e.currentTarget.style.filter = "brightness(1.08)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow =
+                  "0 14px 30px -8px rgba(91,95,239,0.6)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#1C1C1E";
+                e.currentTarget.style.filter = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 24px -8px rgba(91,95,239,0.55)";
               }}
               onMouseDown={(e) => {
                 e.currentTarget.style.transform = "scale(0.98)";
               }}
               onMouseUp={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.transform = "translateY(-1px)";
               }}
             >
               Join

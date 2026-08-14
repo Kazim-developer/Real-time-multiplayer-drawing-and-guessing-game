@@ -9,6 +9,23 @@ type Chat = {
   message: string;
 };
 
+const AVATAR_COLORS = [
+  "#FF6B6B",
+  "#FFC24B",
+  "#35C4B4",
+  "#5B5FEF",
+  "#FF8F73",
+  "#6C5CE7",
+];
+
+const getAvatarColor = (key: string) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
+
 export default function PlayersChat() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [message, setMessage] = useState("");
@@ -50,20 +67,25 @@ export default function PlayersChat() {
   };
 
   return (
-    <div className="flex h-[80vh] max-h-[80vh] flex-col rounded-md border border-gray-500 bg-white p-4">
-      <h2 className="mb-3 text-2xl font-semibold">Chat</h2>
+    <div className="flex h-[80vh] max-h-[80vh] flex-col rounded-2xl border border-[#ECEDF6] bg-white p-4 shadow-[0_2px_6px_rgba(20,20,30,0.04),0_20px_50px_-24px_rgba(91,95,239,0.25)]">
+      <h2 className="mb-3 text-lg font-semibold text-[#15151A]">Chat</h2>
 
       {/* Messages */}
-      <div ref={messagesRef} className="flex-1 overflow-y-auto pr-2">
+      <div ref={messagesRef} className="flex-1 overflow-y-auto pr-1">
         <div className="flex flex-col gap-2">
           {chats.map((chat, index) => (
             <div
               key={`${chat.socketId}-${index}`}
-              className="rounded-md border border-gray-200 p-2"
+              className="rounded-xl border border-[#ECEDF6] bg-[#FAFAFC] p-2.5"
             >
-              <div className="text-sm font-bold">{chat.username}</div>
+              <div
+                className="text-xs font-bold"
+                style={{ color: getAvatarColor(chat.socketId) }}
+              >
+                {chat.username}
+              </div>
 
-              <div className="text-sm text-gray-700">{chat.message}</div>
+              <div className="text-sm text-[#15151A]">{chat.message}</div>
             </div>
           ))}
         </div>
@@ -72,7 +94,7 @@ export default function PlayersChat() {
       {/* Input */}
       <form
         onSubmit={handleSubmit}
-        className="mt-3 flex gap-2 border-t border-gray-200 pt-3"
+        className="mt-3 flex gap-2 border-t border-[#ECEDF6] pt-3"
       >
         <input
           ref={inputRef}
@@ -80,7 +102,7 @@ export default function PlayersChat() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="send guess here ..."
-          className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-black"
+          className="min-w-0 flex-1 rounded-full border border-[#E6E7F0] bg-[#FAFAFC] px-4 py-2 text-sm text-[#15151A] outline-none transition-colors focus:border-[#5B5FEF] focus:bg-white focus:ring-4 focus:ring-[#5B5FEF]/15"
         />
       </form>
     </div>

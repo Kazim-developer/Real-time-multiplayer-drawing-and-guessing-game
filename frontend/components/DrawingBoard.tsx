@@ -283,7 +283,7 @@ export default function DrawingBoard({ isDrawer }: DrawingBoardProps) {
   return (
     <div className="flex w-full flex-col gap-4">
       {/* Canvas */}
-      <div className="w-full overflow-hidden rounded-xl border border-gray-300 bg-white">
+      <div className="w-full overflow-hidden rounded-2xl border border-[#ECEDF6] bg-white shadow-[0_2px_6px_rgba(20,20,30,0.04),0_20px_50px_-24px_rgba(91,95,239,0.25)]">
         <canvas
           ref={canvasRef}
           className="block h-[500px] w-full touch-none bg-white"
@@ -296,15 +296,17 @@ export default function DrawingBoard({ isDrawer }: DrawingBoardProps) {
 
       {/* Drawing controls */}
       {isDrawer && (
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-4 rounded-2xl border border-[#ECEDF6] bg-white p-3 shadow-[0_2px_6px_rgba(20,20,30,0.04)]">
           <div className="flex items-center gap-2">
             {COLORS.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setColor(item)}
-                className={`h-7 w-7 rounded-full border-2 ${
-                  color === item ? "border-black" : "border-transparent"
+                className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${
+                  color === item
+                    ? "border-[#5B5FEF] ring-2 ring-[#5B5FEF]/25"
+                    : "border-white shadow-[0_0_0_1px_#ECEDF6]"
                 }`}
                 style={{
                   backgroundColor: item,
@@ -317,7 +319,7 @@ export default function DrawingBoard({ isDrawer }: DrawingBoardProps) {
           <button
             type="button"
             onClick={clearCanvas}
-            className="rounded-lg bg-[#a2fa18] px-4 py-2 text-sm font-medium text-gray-700 hover:opacity-90"
+            className="rounded-full bg-[#FF6B6B]/10 px-4 py-2 text-sm font-semibold text-[#FF6B6B] transition-colors hover:bg-[#FF6B6B]/20"
           >
             Clear
           </button>

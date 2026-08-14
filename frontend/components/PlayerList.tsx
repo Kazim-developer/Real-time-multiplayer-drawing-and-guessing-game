@@ -12,6 +12,23 @@ export type Player = {
   score: number;
 };
 
+const AVATAR_COLORS = [
+  "#FF6B6B",
+  "#FFC24B",
+  "#35C4B4",
+  "#5B5FEF",
+  "#FF8F73",
+  "#6C5CE7",
+];
+
+const getAvatarColor = (key: string) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
+
 export default function PlayerList({ round }: { round: number }) {
   const players = usePlayersStore((s) => s.players);
   const setPlayers = usePlayersStore((s) => s.addPlayers);
@@ -33,25 +50,47 @@ export default function PlayerList({ round }: { round: number }) {
   }, []);
 
   return (
-    <div className="bg-white border-1 border-gray-500 rounded-md p-4 h-[80vh] max-h-[80vh] overflow-y-auto">
-      <h2 className="text-2xl">Round {round} of 3</h2>
-      <hr className="my-2 text-gray-300 rounded-md" />
-      <h2 className="text-2xl mb-2">Players ({players.length})</h2>
+    <div className="flex h-[80vh] max-h-[80vh] flex-col overflow-y-auto rounded-2xl border border-[#ECEDF6] bg-white p-4 shadow-[0_2px_6px_rgba(20,20,30,0.04),0_20px_50px_-24px_rgba(91,95,239,0.25)]">
+      <span className="text-xs font-semibold uppercase tracking-wide text-[#93949F]">
+        Round {round} of 3
+      </span>
+      <hr className="my-3 border-[#ECEDF6]" />
+      <h2 className="mb-3 text-lg font-semibold text-[#15151A]">
+        Players ({players.length})
+      </h2>
 
       <div className="flex flex-col gap-2">
-        {players.map((player) => (
-          <div
-            key={player.socketId}
-            className="flex items-center gap-5 border-1 border-gray-300 rounded-md p-2"
-          >
-            <span className="font-bold"># {player.id}</span>
-            <div className="flex flex-col items-center">
-              <span>{player.username}</span>
-              <span>Points: {player.score}</span>
+        {players.map((player) => {
+          const isDrawerPlayer = player.socketId === drawerId;
+
+          return (
+            <div
+              key={player.socketId}
+              className={`flex items-center gap-3 rounded-xl border p-2.5 transition-colors ${
+                isDrawerPlayer
+                  ? "border-[#5B5FEF]/30 bg-[#5B5FEF]/5"
+                  : "border-[#ECEDF6] bg-[#FAFAFC]"
+              }`}
+            >
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ background: getAvatarColor(player.socketId) }}
+              />
+              <span className="text-sm font-bold text-[#15151A]">
+                # {player.id}
+              </span>
+              <div className="flex flex-1 flex-col">
+                <span className="text-sm font-medium text-[#15151A]">
+                  {player.username}
+                </span>
+                <span className="text-xs text-[#93949F]">
+                  Points: {player.score}
+                </span>
+              </div>
+              {isDrawerPlayer && <PenIcon />}
             </div>
-            {player.socketId === drawerId && <PenIcon />}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
