@@ -16,8 +16,35 @@ export async function initializeGame() {
       startedAt: 0,
       endsAt: 0,
       currentDrawerId: "",
+      drawerName: "",
     });
   }
+}
+
+export async function setChoosing(drawerName: string) {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "choosing",
+    drawerName: drawerName,
+  });
+}
+
+export async function finishChoosing() {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "drawing",
+    drawerName: "",
+  });
+}
+
+export async function resetGameState() {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "waiting",
+    round: 0,
+    turn: 0,
+    startedAt: 0,
+    endsAt: 0,
+    currentDrawerId: "",
+    drawerName: "",
+  });
 }
 
 export async function getGameState() {

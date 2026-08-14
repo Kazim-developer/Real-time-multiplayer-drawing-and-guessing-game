@@ -9,6 +9,8 @@ import {
   getCurrentDrawerId,
   getCurrentRound,
   initializeGame,
+  resetGameState,
+  getGameState,
 } from "./game/gameState.js";
 
 import { registerDrawingEvents } from "./sockets/drawingSocket.js";
@@ -18,6 +20,8 @@ import { tryStartGame } from "./game/gameManager.js";
 import { getOfferedWords } from "./game/wordManager.js";
 
 import { redis } from "./redis/client.js";
+import { clearDrawingState } from "./game/drawingState.js";
+import { clearRoundPlayers } from "./game/playerRound.js";
 
 const app = express();
 
@@ -40,120 +44,87 @@ async function startServer() {
   io.on("connection", async (socket) => {
     const username = socket.handshake.auth.username;
 
-    console.log("User connected:", username);
-
-    /*
-     * Add player to Redis
-     */
     await addPlayer(socket.id, username);
 
-    /*
-     * Get updated player list
-     */
     const players = await getAllPlayers();
 
-    /*
-     * Tell existing players
-     * about the new player.
-     */
     socket.broadcast.emit("players:update", players);
 
-    /*
-     * Tell newly connected player
-     * about the current players.
-     */
     socket.emit("join-success", {
       username,
       players,
     });
 
-    /*
-     * Try to start the game.
-     *
-     * gameManager itself checks:
-     * - game status
-     * - minimum 2 players
-     */
     await tryStartGame(io);
 
-    /*
-     * Player list request
-     */
     socket.on("players:get", async () => {
       const players = await getAllPlayers();
 
       socket.emit("players:update", players);
     });
 
-    /*
-     * Register drawing events
-     */
     registerDrawingEvents(io, socket);
 
-    /*
-     * Register game events
-     *
-     * Includes:
-     * word:select
-     */
     registerGameEvents(io, socket);
 
-    /*
-     * Send current game state
-     * to a newly connected/reconnected client.
-     */
     socket.on("game:get-state", async () => {
-      const currentDrawerId = await getCurrentDrawerId();
+      const gameState = await getGameState();
 
-      const endsAt = await getTurnEndsAt();
-      const currentRound = await getCurrentRound();
+      const currentDrawerId = gameState.currentDrawerId;
+      const currentRound = gameState.round;
+      const status = gameState.status;
+      const choosingDrawerName = gameState.choosingDrawerName;
+      const endsAt = gameState.endsAt;
 
-      /*
-       * Tell this client
-       * who is currently drawing.
-       */
+      // Current drawer
       socket.emit("game:drawer", {
         socketId: currentDrawerId,
       });
 
+      // Current round
       socket.emit("round:started", {
         round: Number(currentRound),
       });
 
-      /*
-       * Only the drawer
-       * receives the word options.
-       */
+      // If I am the drawer, send the available words.
       if (socket.id === currentDrawerId) {
         const words = getOfferedWords();
 
         socket.emit("word:options", words);
       }
 
-      /*
-       * Send current timer state
-       * to EVERY player.
-       */
-      if (endsAt) {
+      // If the game is currently in word-selection phase,
+      // tell non-drawers who is choosing.
+      if (status === "choosing" && socket.id !== currentDrawerId) {
+        socket.emit("choosing:started", {
+          drawerName: choosingDrawerName,
+        });
+      }
+
+      // If the turn has already started, restore the timer.
+      if (endsAt && status === "drawing") {
         socket.emit("turn:started", {
           drawerId: currentDrawerId,
-
           endsAt: Number(endsAt),
         });
       }
     });
-
-    /*
-     * Player disconnected
-     */
-    socket.on("disconnect", async (reason) => {
-      console.log("DISCONNECT:", socket.id, username, reason);
+    socket.on("disconnect", async () => {
+      console.log("User disconnected:", username);
 
       await removePlayer(socket.id);
 
-      console.log("Removed player:", socket.id);
-
       const players = await getAllPlayers();
+
+      if (players.length === 0) {
+        await resetGameState();
+
+        await clearRoundPlayers();
+
+        clearDrawingState();
+
+        console.log("All players disconnected. Game reset.");
+      }
 
       io.emit("players:update", players);
     });

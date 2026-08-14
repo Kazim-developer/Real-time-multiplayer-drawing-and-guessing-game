@@ -14,6 +14,12 @@ export default function GamePage() {
   const setDrawerId = usePlayersStore((s) => s.setDrawerId);
   const [currentRound, setCurrentRound] = useState<number>(0);
 
+  const [drawerName, setDrawerName] = useState<string>("");
+  const [isChoosing, setIsChoosing] = useState<boolean>(false);
+
+  const [word, setWord] = useState("");
+  const [wordLength, setWordLength] = useState(0);
+
   const players = usePlayersStore((s) => s.players);
 
   const showWordSelectionModal = useShowElementStore(
@@ -28,6 +34,8 @@ export default function GamePage() {
   const [timeLeft, setTimeLeft] = useState(60);
 
   useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+
     const handleDrawer = ({ socketId }: { socketId: string }) => {
       setDrawerId(socketId);
     };
@@ -41,29 +49,22 @@ export default function GamePage() {
       setCurrentRound(round);
     };
 
-    socket.on("game:drawer", handleDrawer);
-    socket.on("word:options", handleWords);
-
-    socket.on("round:started", handleRound);
-
-    // Request state only AFTER listeners exist
-    socket.emit("game:get-state");
-
-    return () => {
-      socket.off("game:drawer", handleDrawer);
-      socket.off("word:options", handleWords);
-      socket.off("round:started", handleRound);
+    const handleChoosingStarted = ({ drawerName }: { drawerName: string }) => {
+      setDrawerName(drawerName);
+      setIsChoosing(true);
     };
-  }, []);
 
-  const isDrawer = socket.id === drawerId;
+    const handleChoosingFinished = () => {
+      setIsChoosing(false);
+    };
 
-  useEffect(() => {
-    setShowWordSelectionModal(isDrawer);
-  }, [isDrawer]);
+    const handleSelectedWord = ({ word }: { word: string }) => {
+      setWord(word);
+    };
 
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
+    const handleWordLength = ({ length }: { length: number }) => {
+      setWordLength(length);
+    };
 
     const handleTurnStarted = ({ endsAt }: { endsAt: number }) => {
       if (interval) {
@@ -86,11 +87,33 @@ export default function GamePage() {
       interval = setInterval(updateTimer, 100);
     };
 
+    socket.on("game:drawer", handleDrawer);
+    socket.on("word:options", handleWords);
+    socket.on("round:started", handleRound);
+
+    socket.on("choosing:started", handleChoosingStarted);
+    socket.on("choosing:finished", handleChoosingFinished);
+
+    socket.on("word:selected", handleSelectedWord);
+    socket.on("word:length", handleWordLength);
+
     socket.on("turn:started", handleTurnStarted);
 
+    // IMPORTANT:
+    // All listeners are registered before requesting state.
     socket.emit("game:get-state");
 
     return () => {
+      socket.off("game:drawer", handleDrawer);
+      socket.off("word:options", handleWords);
+      socket.off("round:started", handleRound);
+
+      socket.off("choosing:started", handleChoosingStarted);
+      socket.off("choosing:finished", handleChoosingFinished);
+
+      socket.off("word:selected", handleSelectedWord);
+      socket.off("word:length", handleWordLength);
+
       socket.off("turn:started", handleTurnStarted);
 
       if (interval) {
@@ -98,6 +121,12 @@ export default function GamePage() {
       }
     };
   }, []);
+
+  const isDrawer = socket.id === drawerId;
+
+  useEffect(() => {
+    setShowWordSelectionModal(isDrawer);
+  }, [isDrawer, setShowWordSelectionModal]);
 
   return (
     <main className="grid grid-cols-4 gap-4 center-content">
@@ -111,8 +140,10 @@ export default function GamePage() {
               {players.length < 2
                 ? "Waiting for 1 more player to start the game"
                 : isDrawer
-                  ? "Your turn, draw the word: ${word}"
-                  : "Watch the drawing, and guess the word"}
+                  ? `Your turn, draw the word: ${word}`
+                  : isChoosing
+                    ? `${drawerName} is choosing a word`
+                    : `Word: ${"_ ".repeat(wordLength).trim()}`}
             </h1>
           </div>
         </div>

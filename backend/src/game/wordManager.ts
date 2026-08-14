@@ -5,7 +5,7 @@ let offeredWords: string[] = [];
 let selectedWord: string | null = null;
 
 export function sendWordOptions(io: Server, drawerSocketId: string) {
-  offeredWords = getRandomWords(3);
+  offeredWords = getRandomWords(5);
   selectedWord = null;
 
   io.to(drawerSocketId).emit("word:options", offeredWords);
