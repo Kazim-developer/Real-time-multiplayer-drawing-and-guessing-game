@@ -17,8 +17,20 @@ body {
   background-color: #f7f7f5;
 }
 
-.center-content {
-  width: 90%;
-  margin: 1rem auto;
-  max-width: 1200px;
+@keyframes valuePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.timer-value-urgent {
+  animation: valuePulse 0.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-value-urgent {
+    animation: none !important;
+  }
 }

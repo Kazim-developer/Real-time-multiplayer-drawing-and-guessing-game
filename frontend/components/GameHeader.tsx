@@ -22,9 +22,18 @@ export default function GameHeader({
   return (
     <div className="col-span-4 rounded-2xl border border-[#ECEDF6] bg-white p-4 shadow-[0_2px_6px_rgba(20,20,30,0.04),0_20px_50px_-24px_rgba(91,95,239,0.25)]">
       <div className="flex items-center gap-4">
-        <div className="shrink-0 rounded-full bg-[#5B5FEF]/10 px-4 py-1.5">
-          <h1 className="text-sm font-semibold text-[#5B5FEF]">
-            Time Left: {timeLeft}
+        <div className="shrink-0">
+          <h1 className="text-sm font-semibold text-[#93949F]">
+            Time Left:{" "}
+            <span
+              className={
+                timeLeft === 0
+                  ? "font-bold uppercase text-[#FF3B30]"
+                  : `font-bold text-[#15151A] ${timeLeft <= 10 ? "timer-value-urgent text-[#FF3B30]" : ""}`
+              }
+            >
+              {timeLeft === 0 ? "Game Over" : timeLeft}
+            </span>
           </h1>
         </div>
         <div className="flex-1 text-center">

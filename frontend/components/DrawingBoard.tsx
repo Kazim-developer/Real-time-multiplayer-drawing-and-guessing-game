@@ -296,7 +296,7 @@ export default function DrawingBoard({ isDrawer }: DrawingBoardProps) {
 
       {/* Drawing controls */}
       {isDrawer && (
-        <div className="flex items-center justify-center gap-4 rounded-2xl border border-[#ECEDF6] bg-white p-3 shadow-[0_2px_6px_rgba(20,20,30,0.04)]">
+        <div className="sticky bottom-4 z-10 mx-auto flex w-fit items-center justify-center gap-4 rounded-2xl border border-[#ECEDF6] bg-white p-3 shadow-[0_8px_30px_-8px_rgba(20,20,30,0.15)]">
           <div className="flex items-center gap-2">
             {COLORS.map((item) => (
               <button

@@ -3,7 +3,7 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 
 import { initializeGame } from "./game/gameState.js";
-import { connectionHandler } from "./game/connectionHandler.js";
+import { connectionHandler } from "./handlers/connectionHandler.js";
 
 const app = express();
 

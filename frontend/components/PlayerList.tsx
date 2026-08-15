@@ -80,7 +80,7 @@ export default function PlayerList({ round }: { round: number }) {
                 # {player.id}
               </span>
               <div className="flex flex-1 flex-col">
-                <span className="text-sm font-medium text-[#15151A]">
+                <span className="text-sm font-medium text-[#15151A] capitalize">
                   {player.username}
                 </span>
                 <span className="text-xs text-[#93949F]">

@@ -4,13 +4,13 @@ import {
   getAllPlayers,
   removePlayer,
 } from "../redis/playerState.js";
-import { tryStartGame } from "./gameManager.js";
+import { tryStartGame } from "../game/gameManager.js";
 import { registerDrawingEvents } from "../sockets/drawingSocket.js";
 import { registerGameEvents } from "../sockets/gameSocket.js";
-import { getGameState, resetGameState } from "./gameState.js";
-import { getOfferedWords } from "./wordManager.js";
-import { clearDrawingState } from "./drawingState.js";
-import { clearRoundPlayers } from "./playerRound.js";
+import { getGameState, resetGameState } from "../game/gameState.js";
+import { getOfferedWords, getSelectedWord } from "../game/wordManager.js";
+import { clearDrawingState } from "../game/drawingState.js";
+import { clearRoundPlayers } from "../game/playerRound.js";
 
 import { redis } from "../redis/client.js";
 
@@ -57,22 +57,35 @@ export async function connectionHandler(socket: Socket, io: Server) {
       round: currentRound,
     });
 
-    // Drawer gets the word options.
     if (status === "choosing" && socket.id === currentDrawerId) {
       const words = getOfferedWords();
 
       socket.emit("word:options", words);
     }
 
-    // Non-drawer is currently waiting for drawer to choose.
     if (status === "choosing" && socket.id !== currentDrawerId) {
       socket.emit("choosing:started", {
         drawerName,
       });
     }
 
-    // Drawing phase.
-    if (status === "drawing" && endsAt > Date.now()) {
+    if (status === "drawing") {
+      const selectedWord = getSelectedWord();
+
+      if (selectedWord) {
+        if (socket.id === currentDrawerId) {
+          socket.emit("word:selected", {
+            word: selectedWord,
+          });
+        } else {
+          socket.emit("word:length", {
+            length: selectedWord.length,
+          });
+        }
+      }
+    }
+
+    if (status === "drawing") {
       socket.emit("turn:started", {
         drawerId: currentDrawerId,
         endsAt,
