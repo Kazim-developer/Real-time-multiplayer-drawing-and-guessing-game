@@ -21,59 +21,20 @@ import {
 
 import { sendWordOptions } from "./wordManager.js";
 
-// export async function tryStartGame(io: Server) {
-//   const status = await getGameStatus();
-
-//   if (status !== "waiting") {
-//     return;
-//   }
-
-//   const players = await getAllPlayers();
-
-//   if (players.length < 2) {
-//     return;
-//   }
-
-//   await startRound(1);
-
-//   io.emit("round:started", {
-//     round: 1,
-//   });
-
-//   await clearRoundPlayers();
-//   await createRoundPlayers();
-
-//   await startNextTurn(io);
-
-//   console.log("Game started.");
-// }
-
 export async function tryStartGame(io: Server) {
-  console.log("tryStartGame() called");
-
   const status = await getGameStatus();
 
-  console.log("Game status:", status);
-
   if (status !== "waiting") {
-    console.log("Game is not waiting. Returning.");
     return;
   }
 
   const players = await getAllPlayers();
 
-  console.log("Players:", players.length);
-
   if (players.length < 2) {
-    console.log("Not enough players. Returning.");
     return;
   }
 
-  console.log("Starting game...");
-
   await startRound(1);
-
-  console.log("Round 1 started");
 
   io.emit("round:started", {
     round: 1,
@@ -81,15 +42,9 @@ export async function tryStartGame(io: Server) {
 
   await clearRoundPlayers();
 
-  console.log("Round players cleared");
-
   await createRoundPlayers();
 
-  console.log("Round players created");
-
   await startNextTurn(io);
-
-  console.log("Game started.");
 }
 
 export async function startNextTurn(io: Server) {
@@ -103,23 +58,21 @@ export async function startNextTurn(io: Server) {
   const currentTurn = Number(await getCurrentTurn()) || 0;
 
   await setTurn(currentTurn + 1);
-
   await setCurrentDrawerId(drawerSocketId);
+
+  const drawer = await getPlayer(drawerSocketId);
+
+  if (!drawer.username) {
+    return;
+  }
+
+  await setChoosing(drawer.username);
 
   io.emit("game:drawer", {
     socketId: drawerSocketId,
   });
 
   sendWordOptions(io, drawerSocketId);
-
-  const drawer = await getPlayer(drawerSocketId);
-
-  if (!drawer) {
-    console.error("Drawer not found:", drawerSocketId);
-    return;
-  }
-
-  await setChoosing(drawer.username as string);
 
   io.except(drawerSocketId).emit("choosing:started", {
     drawerName: drawer.username,
@@ -143,8 +96,6 @@ export async function finishCurrentRound(io: Server) {
 
     await startNextTurn(io);
 
-    console.log("3 rounds completed. Starting again from Round 1.");
-
     return;
   }
 
@@ -160,6 +111,4 @@ export async function finishCurrentRound(io: Server) {
   await createRoundPlayers();
 
   await startNextTurn(io);
-
-  console.log(`Round ${nextRound} started.`);
 }

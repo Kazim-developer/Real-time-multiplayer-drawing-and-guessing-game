@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 
-import { selectWord, getSelectedWord } from "../game/wordManager.js";
+import { selectWord } from "../game/wordManager.js";
 
 import {
   finishChoosing,
@@ -41,8 +41,6 @@ export function registerGameEvents(io: Server, socket: Socket) {
       startedAt,
       endsAt,
     });
-
-    console.log("Selected word:", word);
   });
 
   socket.on("choosing:finished", () => {

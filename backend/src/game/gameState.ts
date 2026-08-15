@@ -21,20 +21,6 @@ export async function initializeGame() {
   }
 }
 
-export async function setChoosing(drawerName: string) {
-  await redis.hset(GAME_STATE_KEY, {
-    status: "choosing",
-    drawerName: drawerName,
-  });
-}
-
-export async function finishChoosing() {
-  await redis.hset(GAME_STATE_KEY, {
-    status: "drawing",
-    drawerName: "",
-  });
-}
-
 export async function resetGameState() {
   await redis.hset(GAME_STATE_KEY, {
     status: "waiting",
@@ -81,6 +67,31 @@ export async function getTurnEndsAt() {
   return await redis.hget(GAME_STATE_KEY, "endsAt");
 }
 
+/*
+ * Called when the drawer is choosing a word.
+ */
+export async function setChoosing(drawerName: string) {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "choosing",
+    drawerName,
+    startedAt: 0,
+    endsAt: 0,
+  });
+}
+
+/*
+ * Called after the drawer successfully selects a word.
+ */
+export async function finishChoosing() {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "drawing",
+    drawerName: "",
+  });
+}
+
+/*
+ * Start the 60-second drawing timer.
+ */
 export async function startTurn() {
   const startedAt = Date.now();
   const endsAt = startedAt + TURN_DURATION;
@@ -97,26 +108,23 @@ export async function startTurn() {
   };
 }
 
+/*
+ * Start a new round.
+ */
 export async function startRound(round: number) {
   await redis.hset(GAME_STATE_KEY, {
     status: "round-starting",
     round,
     turn: 0,
+    startedAt: 0,
+    endsAt: 0,
+    drawerName: "",
   });
 }
 
 export async function setTurn(turn: number) {
   await redis.hset(GAME_STATE_KEY, {
     turn,
-  });
-}
-
-export async function finishGame() {
-  await redis.hset(GAME_STATE_KEY, {
-    status: "finished",
-    currentDrawerId: "",
-    startedAt: 0,
-    endsAt: 0,
   });
 }
 

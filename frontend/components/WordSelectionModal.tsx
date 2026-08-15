@@ -6,9 +6,13 @@ import { socket } from "@/lib/socket";
 import LineDivider from "./LineDivider";
 import { useState } from "react";
 
-const WORD_COLORS = ["#FF6B6B", "#FFC24B", "#35C4B4", "#5B5FEF"];
-
-export default function WordSelectionModal({ words }: { words: string[] }) {
+export default function WordSelectionModal({
+  words,
+  setWord,
+}: {
+  words: string[];
+  setWord: (value: string) => void;
+}) {
   const setShowWordSelectionModal = useShowElementStore(
     (s) => s.setShowWordSelectionModal,
   );
@@ -26,11 +30,10 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
         </h1>
 
         <div className="mx-auto flex flex-wrap items-center justify-center gap-2">
-          {words.map((word, index) => (
+          {words.map((word) => (
             <button
               key={word}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
-              style={{ background: WORD_COLORS[index % WORD_COLORS.length] }}
+              className="rounded-full border border-[#E6E7F0] bg-[#FAFAFC] px-5 py-2 text-sm font-semibold text-[#15151A] transition-all hover:-translate-y-0.5 hover:border-[#5B5FEF] hover:bg-[#5B5FEF]/5 hover:text-[#5B5FEF] hover:shadow-[0_8px_20px_-8px_rgba(91,95,239,0.35)] active:scale-95"
               onClick={() => {
                 setShowWordSelectionModal(false);
                 socket.emit("word:select", word);
@@ -48,6 +51,7 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
           onSubmit={(e) => {
             e.preventDefault();
             setShowWordSelectionModal(false);
+            setWord(inputWord);
             socket.emit("word:select", inputWord);
             socket.emit("choosing:finished");
           }}
@@ -56,6 +60,7 @@ export default function WordSelectionModal({ words }: { words: string[] }) {
           <input
             type="text"
             placeholder="enter a custom word"
+            required
             onChange={(e) => setInputWord(e.target.value)}
             className="min-w-0 flex-1 rounded-full border border-[#E6E7F0] bg-[#FAFAFC] px-4 py-2 text-sm text-[#15151A] outline-none transition-colors focus:border-[#5B5FEF] focus:bg-white focus:ring-4 focus:ring-[#5B5FEF]/15"
           />

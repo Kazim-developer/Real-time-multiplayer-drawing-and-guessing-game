@@ -9,8 +9,6 @@ export function sendWordOptions(io: Server, drawerSocketId: string) {
   selectedWord = null;
 
   io.to(drawerSocketId).emit("word:options", offeredWords);
-
-  console.log("Word options:", offeredWords);
 }
 
 export function getOfferedWords() {
@@ -18,11 +16,11 @@ export function getOfferedWords() {
 }
 
 export function selectWord(word: string) {
-  if (!offeredWords.includes(word)) {
+  if (!word || !word.trim()) {
     return false;
   }
 
-  selectedWord = word;
+  selectedWord = word.trim();
 
   return true;
 }
