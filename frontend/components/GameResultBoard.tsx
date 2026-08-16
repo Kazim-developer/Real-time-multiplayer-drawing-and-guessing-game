@@ -16,8 +16,8 @@ const medals = ["🥇", "🥈", "🥉"];
 export default function GameResultBoard({ players }: GameResultBoardProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-[90%] max-w-[600px] rounded-3xl border border-[#ECEDF6] bg-white p-6 shadow-[0_24px_80px_-20px_rgba(20,20,30,0.35)]">
-        <div className="mb-6 text-center">
+      <div className="flex max-h-[600px] w-[90%] max-w-[600px] flex-col rounded-3xl border border-[#ECEDF6] bg-white p-6 shadow-[0_24px_80px_-20px_rgba(20,20,30,0.35)]">
+        <div className="mb-6 shrink-0 text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-[#93949F]">
             Game Complete
           </p>
@@ -26,12 +26,12 @@ export default function GameResultBoard({ players }: GameResultBoardProps) {
             Final Results
           </h2>
 
-          <h2 className="text-[#93949F] text-lg text-center">
+          <h2 className="text-center text-lg text-[#93949F]">
             This dialogue will be closed automatically
           </h2>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 overflow-y-auto pr-1">
           {players.map((player) => (
             <div
               key={player.socketId}

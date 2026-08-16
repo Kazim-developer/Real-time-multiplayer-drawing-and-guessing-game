@@ -18,23 +18,23 @@ export default function TurnResultBoard({
 }: TurnResultBoardProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-[90%] max-w-[600px] rounded-3xl border border-[#ECEDF6] bg-white p-6 shadow-[0_24px_80px_-20px_rgba(20,20,30,0.35)]">
-        <div className="mb-6 text-center">
+      <div className="flex max-h-[600px] w-[90%] max-w-[600px] flex-col rounded-3xl border border-[#ECEDF6] bg-white p-6 shadow-[0_24px_80px_-20px_rgba(20,20,30,0.35)]">
+        <div className="mb-6 shrink-0 text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-[#93949F]">
             Turn Complete
           </p>
 
           <h2 className="mt-1 text-3xl">
             <span className="text-[#93949F]">Answer is: </span>
-            <span className="font-bold capitialize">{word}</span>
+            <span className="font-bold capitalize">{word}</span>
           </h2>
 
-          <h2 className="text-[#93949F] text-lg text-center">
+          <h2 className="text-center text-lg text-[#93949F]">
             This dialogue will close automatically
           </h2>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 overflow-y-auto pr-1">
           {players.map((player, index) => (
             <div
               key={player.socketId}
@@ -45,7 +45,7 @@ export default function TurnResultBoard({
                   {index + 1}
                 </span>
 
-                <span className="font-semibold text-[#15151A] capitialize">
+                <span className="font-semibold capitalize text-[#15151A]">
                   {player.username}
                 </span>
               </div>
