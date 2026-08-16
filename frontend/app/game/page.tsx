@@ -2,8 +2,10 @@
 
 import DrawingBoard from "@/components/DrawingBoard";
 import GameHeader from "@/components/GameHeader";
+import GameResultBoard from "@/components/GameResultBoard";
 import PlayerList from "@/components/PlayerList";
 import PlayersChat from "@/components/PlayersChat";
+import TurnResultBoard from "@/components/TurnResultBoard";
 import WordSelectionModal from "@/components/WordSelectionModal";
 import { socket } from "@/lib/socket";
 import { usePlayersStore } from "@/stores/playersList.store";
@@ -20,6 +22,25 @@ export default function GamePage() {
 
   const [word, setWord] = useState("");
   const [wordLength, setWordLength] = useState(0);
+
+  const [turnResult, setTurnResult] = useState<{
+    word: string;
+    players: {
+      socketId: string;
+      username: string;
+      points: number;
+      totalScore: number;
+    }[];
+  } | null>(null);
+
+  const [gameResult, setGameResult] = useState<{
+    players: {
+      socketId: string;
+      username: string;
+      score: number;
+      position: number;
+    }[];
+  } | null>(null);
 
   const players = usePlayersStore((s) => s.players);
 
@@ -47,6 +68,7 @@ export default function GamePage() {
 
     const handleRound = ({ round }: { round: number }) => {
       setCurrentRound(round);
+      setGameResult(null);
     };
 
     const handleChoosingStarted = ({ drawerName }: { drawerName: string }) => {
@@ -66,7 +88,48 @@ export default function GamePage() {
       setWordLength(length);
     };
 
+    const handleTurnResult = ({
+      word,
+      players,
+      duration,
+    }: {
+      word: string;
+      players: {
+        socketId: string;
+        username: string;
+        points: number;
+        totalScore: number;
+      }[];
+      duration: number;
+    }) => {
+      setTurnResult({
+        word,
+        players,
+      });
+
+      setTimeout(() => {
+        setTurnResult(null);
+      }, duration);
+    };
+
+    const handleGameResult = ({
+      players,
+    }: {
+      players: {
+        socketId: string;
+        username: string;
+        score: number;
+        position: number;
+      }[];
+    }) => {
+      setGameResult({
+        players,
+      });
+    };
+
     const handleTurnStarted = ({ endsAt }: { endsAt: number }) => {
+      setTurnResult(null);
+
       if (interval) {
         clearInterval(interval);
       }
@@ -98,6 +161,8 @@ export default function GamePage() {
     socket.on("word:length", handleWordLength);
 
     socket.on("turn:started", handleTurnStarted);
+    socket.on("turn:result", handleTurnResult);
+    socket.on("game:result", handleGameResult);
 
     socket.emit("game:get-state");
 
@@ -113,6 +178,9 @@ export default function GamePage() {
       socket.off("word:length", handleWordLength);
 
       socket.off("turn:started", handleTurnStarted);
+
+      socket.off("turn:result", handleTurnResult);
+      socket.off("game:result", handleGameResult);
 
       if (interval) {
         clearInterval(interval);
@@ -150,6 +218,14 @@ export default function GamePage() {
         {showWordSelectionModal && (
           <WordSelectionModal words={words} setWord={setWord} />
         )}
+        {turnResult && (
+          <TurnResultBoard
+            word={turnResult.word}
+            players={turnResult.players}
+          />
+        )}
+
+        {gameResult && <GameResultBoard players={gameResult.players} />}
       </div>
     </main>
   );

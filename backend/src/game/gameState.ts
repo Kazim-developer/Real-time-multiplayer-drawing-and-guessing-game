@@ -4,6 +4,8 @@ const GAME_STATE_KEY = "game:state";
 
 const TURN_DURATION = 60_000;
 const TOTAL_ROUNDS = 3;
+const CORRECT_GUESSERS_KEY = "game:turn:correct";
+const TURN_RESULTS_KEY = "game:turn:results";
 
 export async function initializeGame() {
   const exists = await redis.exists(GAME_STATE_KEY);
@@ -67,9 +69,6 @@ export async function getTurnEndsAt() {
   return await redis.hget(GAME_STATE_KEY, "endsAt");
 }
 
-/*
- * Called when the drawer is choosing a word.
- */
 export async function setChoosing(drawerName: string) {
   await redis.hset(GAME_STATE_KEY, {
     status: "choosing",
@@ -79,9 +78,6 @@ export async function setChoosing(drawerName: string) {
   });
 }
 
-/*
- * Called after the drawer successfully selects a word.
- */
 export async function finishChoosing() {
   await redis.hset(GAME_STATE_KEY, {
     status: "drawing",
@@ -89,9 +85,6 @@ export async function finishChoosing() {
   });
 }
 
-/*
- * Start the 60-second drawing timer.
- */
 export async function startTurn() {
   const startedAt = Date.now();
   const endsAt = startedAt + TURN_DURATION;
@@ -108,9 +101,6 @@ export async function startTurn() {
   };
 }
 
-/*
- * Start a new round.
- */
 export async function startRound(round: number) {
   await redis.hset(GAME_STATE_KEY, {
     status: "round-starting",
@@ -126,6 +116,50 @@ export async function setTurn(turn: number) {
   await redis.hset(GAME_STATE_KEY, {
     turn,
   });
+}
+
+export async function hasCorrectlyGuessed(socketId: string) {
+  return (await redis.sismember(CORRECT_GUESSERS_KEY, socketId)) === 1;
+}
+
+export async function addCorrectGuesser(socketId: string) {
+  await redis.sadd(CORRECT_GUESSERS_KEY, socketId);
+}
+
+export async function clearCorrectGuessers() {
+  await redis.del(CORRECT_GUESSERS_KEY);
+}
+
+export async function setTurnResult() {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "turn-result",
+  });
+}
+
+export async function setGameResult() {
+  await redis.hset(GAME_STATE_KEY, {
+    status: "game-result",
+  });
+}
+
+export async function clearTurnResults() {
+  await redis.del(TURN_RESULTS_KEY);
+}
+
+export async function setTurnPoints(socketId: string, points: number) {
+  await redis.hset(TURN_RESULTS_KEY, {
+    [socketId]: points,
+  });
+}
+
+export async function getTurnPoints(socketId: string) {
+  const points = await redis.hget(TURN_RESULTS_KEY, socketId);
+
+  return Number(points ?? 0);
+}
+
+export async function getAllTurnResults() {
+  return await redis.hgetall(TURN_RESULTS_KEY);
 }
 
 export { TOTAL_ROUNDS };

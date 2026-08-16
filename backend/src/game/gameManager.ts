@@ -1,6 +1,10 @@
 import { Server } from "socket.io";
 
-import { getAllPlayers, getPlayer } from "../redis/playerState.js";
+import {
+  getAllPlayers,
+  getPlayer,
+  resetAllScores,
+} from "../redis/playerState.js";
 
 import {
   getGameStatus,
@@ -11,6 +15,12 @@ import {
   startRound,
   TOTAL_ROUNDS,
   setChoosing,
+  clearCorrectGuessers,
+  setTurnResult,
+  setGameResult,
+  clearTurnResults,
+  getAllTurnResults,
+  getCurrentDrawerId,
 } from "./gameState.js";
 
 import {
@@ -19,7 +29,55 @@ import {
   clearRoundPlayers,
 } from "./playerRound.js";
 
-import { sendWordOptions } from "./wordManager.js";
+import { getSelectedWord, sendWordOptions } from "./wordManager.js";
+import { clearDrawingState } from "./drawingState.js";
+
+let turnTimeout: ReturnType<typeof setTimeout> | null = null;
+
+export async function showTurnResult(io: Server) {
+  const players = await getAllPlayers();
+  const turnResults = await getAllTurnResults();
+  const word = getSelectedWord();
+  const currentDrawerId = await getCurrentDrawerId();
+
+  const results = players
+    .map((player) => ({
+      socketId: player.socketId,
+      username: player.username,
+      points: Number(turnResults[player.socketId] ?? 0),
+      totalScore: Number(player.score ?? 0),
+    }))
+    .sort((a, b) => b.points - a.points);
+
+  io.except(currentDrawerId as string).emit("turn:result", {
+    word,
+    players: results,
+    duration: 5000,
+  });
+}
+
+export function scheduleTurnEnd(io: Server, endsAt: number) {
+  if (turnTimeout) {
+    clearTimeout(turnTimeout);
+  }
+
+  const delay = Math.max(0, endsAt - Date.now());
+
+  turnTimeout = setTimeout(async () => {
+    turnTimeout = null;
+
+    console.log("60-second turn finished.");
+
+    // Show the result board.
+    await showTurnResult(io);
+
+    // Keep the result board visible for 5 seconds.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Start the next turn.
+    await startNextTurn(io);
+  }, delay);
+}
 
 export async function tryStartGame(io: Server) {
   const status = await getGameStatus();
@@ -48,12 +106,18 @@ export async function tryStartGame(io: Server) {
 }
 
 export async function startNextTurn(io: Server) {
+  await clearDrawingState();
+
+  await clearTurnResults();
+
   const drawerSocketId = await getNextDrawingPlayer();
 
   if (!drawerSocketId) {
     await finishCurrentRound(io);
     return;
   }
+
+  await clearCorrectGuessers();
 
   const currentTurn = Number(await getCurrentTurn()) || 0;
 
@@ -82,13 +146,34 @@ export async function startNextTurn(io: Server) {
 export async function finishCurrentRound(io: Server) {
   const currentRound = Number(await getCurrentRound());
 
+  /*
+   * All 3 rounds are completed.
+   */
   if (currentRound >= TOTAL_ROUNDS) {
-    const nextRound = 1;
+    console.log("All rounds completed.");
 
-    await startRound(nextRound);
+    /*
+     * Show final game result.
+     */
+    await showGameResult(io);
+
+    /*
+     * Keep final result visible for 5 seconds.
+     */
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    /*
+     * Reset player scores for the next game.
+     */
+    await resetAllScores();
+
+    /*
+     * Start a new game from Round 1.
+     */
+    await startRound(1);
 
     io.emit("round:started", {
-      round: nextRound,
+      round: 1,
     });
 
     await clearRoundPlayers();
@@ -99,6 +184,9 @@ export async function finishCurrentRound(io: Server) {
     return;
   }
 
+  /*
+   * Start the next round.
+   */
   const nextRound = currentRound + 1;
 
   await startRound(nextRound);
@@ -111,4 +199,76 @@ export async function finishCurrentRound(io: Server) {
   await createRoundPlayers();
 
   await startNextTurn(io);
+}
+
+export async function finishCurrentTurn(io: Server) {
+  console.log("Finishing current turn...");
+
+  /*
+   * Put the game into the turn-result state.
+   */
+  await setTurnResult();
+
+  /*
+   * Get current players and their scores.
+   */
+  const players = await getAllPlayers();
+
+  const results = players
+    .map((player) => ({
+      socketId: player.socketId,
+      username: player.username,
+      score: Number(player.score ?? 0),
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  /*
+   * Send the current leaderboard to everyone.
+   */
+  io.emit("turn:result", {
+    players: results,
+  });
+
+  /*
+   * Keep the result visible for 5 seconds.
+   */
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  /*
+   * Check whether Round 3 has also finished.
+   *
+   * At this point we need to know whether there
+   * are any drawing players left.
+   */
+  const nextDrawer = await getNextDrawingPlayer();
+
+  if (!nextDrawer) {
+    await finishCurrentRound(io);
+    return;
+  }
+
+  /*
+   * Otherwise continue with the next turn.
+   */
+  await startNextTurn(io);
+}
+
+export async function showGameResult(io: Server) {
+  const players = await getAllPlayers();
+
+  const results = players
+    .map((player) => ({
+      socketId: player.socketId,
+      username: player.username,
+      score: Number(player.score ?? 0),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .map((player, index) => ({
+      ...player,
+      position: index + 1,
+    }));
+
+  io.emit("game:result", {
+    players: results,
+  });
 }

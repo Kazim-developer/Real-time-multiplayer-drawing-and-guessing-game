@@ -7,6 +7,8 @@ type Chat = {
   socketId: string;
   username: string;
   message: string;
+  correct: boolean;
+  points: number;
 };
 
 const AVATAR_COLORS = [
@@ -38,10 +40,10 @@ export default function PlayersChat() {
       setChats((previousChats) => [...previousChats, chatObject]);
     };
 
-    socket.on("players:chat", handlePlayersChat);
+    socket.on("guess:message", handlePlayersChat);
 
     return () => {
-      socket.off("players:chat", handlePlayersChat);
+      socket.off("guess:message", handlePlayersChat);
     };
   }, []);
 
@@ -58,8 +60,8 @@ export default function PlayersChat() {
 
     if (!trimmedMessage) return;
 
-    socket.emit("players:chat", {
-      message: trimmedMessage,
+    socket.emit("guess:submit", {
+      guess: trimmedMessage,
     });
 
     setMessage("");
@@ -76,16 +78,34 @@ export default function PlayersChat() {
           {chats.map((chat, index) => (
             <div
               key={`${chat.socketId}-${index}`}
-              className="rounded-xl border border-[#ECEDF6] bg-[#FAFAFC] p-2.5"
+              className={
+                chat.correct
+                  ? "flex items-center justify-between gap-2 rounded-xl border border-[#35C4B4]/30 bg-[#35C4B4]/10 p-2.5"
+                  : "rounded-xl border border-[#ECEDF6] bg-[#FAFAFC] p-2.5"
+              }
             >
-              <div
-                className="text-xs font-bold"
-                style={{ color: getAvatarColor(chat.socketId) }}
-              >
-                {chat.username}
+              <div>
+                <div
+                  className="text-xs font-bold capitalize"
+                  style={{
+                    color: chat.correct
+                      ? "#1F9D8F"
+                      : getAvatarColor(chat.socketId),
+                  }}
+                >
+                  {chat.username}
+                </div>
+
+                <div className="text-sm text-[#15151A]">
+                  {chat.correct ? "Guessed the word correctly!" : chat.message}
+                </div>
               </div>
 
-              <div className="text-sm text-[#15151A]">{chat.message}</div>
+              {chat.correct && (
+                <span className="shrink-0 rounded-full bg-[#35C4B4] px-2.5 py-1 text-xs font-bold text-white">
+                  +{chat.points}
+                </span>
+              )}
             </div>
           ))}
         </div>

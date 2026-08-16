@@ -66,3 +66,23 @@ export async function totalPlayers() {
 
   return count;
 }
+
+export async function addScore(socketId: string, points: number) {
+  return await redis.hincrby(PLAYER_KEY(socketId), "score", points);
+}
+
+export async function getScore(socketId: string) {
+  const score = await redis.hget(PLAYER_KEY(socketId), "score");
+
+  return Number(score ?? 0);
+}
+
+export async function resetAllScores() {
+  const players = await getAllPlayers();
+
+  for (const player of players) {
+    if (player.socketId) {
+      await redis.hset(PLAYER_KEY(player.socketId), "score", 0);
+    }
+  }
+}

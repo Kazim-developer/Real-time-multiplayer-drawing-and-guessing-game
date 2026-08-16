@@ -28,3 +28,11 @@ export function selectWord(word: string) {
 export function getSelectedWord() {
   return selectedWord;
 }
+
+export function isCorrectWord(word: string) {
+  if (!selectedWord) {
+    return false;
+  }
+
+  return word.trim().toLowerCase() === selectedWord.trim().toLowerCase();
+}
