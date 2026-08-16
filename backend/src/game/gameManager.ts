@@ -146,30 +146,15 @@ export async function startNextTurn(io: Server) {
 export async function finishCurrentRound(io: Server) {
   const currentRound = Number(await getCurrentRound());
 
-  /*
-   * All 3 rounds are completed.
-   */
   if (currentRound >= TOTAL_ROUNDS) {
     console.log("All rounds completed.");
 
-    /*
-     * Show final game result.
-     */
     await showGameResult(io);
 
-    /*
-     * Keep final result visible for 5 seconds.
-     */
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    /*
-     * Reset player scores for the next game.
-     */
     await resetAllScores();
 
-    /*
-     * Start a new game from Round 1.
-     */
     await startRound(1);
 
     io.emit("round:started", {
@@ -184,9 +169,6 @@ export async function finishCurrentRound(io: Server) {
     return;
   }
 
-  /*
-   * Start the next round.
-   */
   const nextRound = currentRound + 1;
 
   await startRound(nextRound);
@@ -204,14 +186,8 @@ export async function finishCurrentRound(io: Server) {
 export async function finishCurrentTurn(io: Server) {
   console.log("Finishing current turn...");
 
-  /*
-   * Put the game into the turn-result state.
-   */
   await setTurnResult();
 
-  /*
-   * Get current players and their scores.
-   */
   const players = await getAllPlayers();
 
   const results = players
@@ -222,24 +198,12 @@ export async function finishCurrentTurn(io: Server) {
     }))
     .sort((a, b) => b.score - a.score);
 
-  /*
-   * Send the current leaderboard to everyone.
-   */
   io.emit("turn:result", {
     players: results,
   });
 
-  /*
-   * Keep the result visible for 5 seconds.
-   */
   await new Promise((resolve) => setTimeout(resolve, 5000));
 
-  /*
-   * Check whether Round 3 has also finished.
-   *
-   * At this point we need to know whether there
-   * are any drawing players left.
-   */
   const nextDrawer = await getNextDrawingPlayer();
 
   if (!nextDrawer) {
@@ -247,9 +211,6 @@ export async function finishCurrentTurn(io: Server) {
     return;
   }
 
-  /*
-   * Otherwise continue with the next turn.
-   */
   await startNextTurn(io);
 }
 
