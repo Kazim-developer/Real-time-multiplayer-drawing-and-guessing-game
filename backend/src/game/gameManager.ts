@@ -110,6 +110,8 @@ export async function startNextTurn(io: Server) {
 
   await clearTurnResults();
 
+  io.emit("drawing:clear");
+
   const drawerSocketId = await getNextDrawingPlayer();
 
   if (!drawerSocketId) {
