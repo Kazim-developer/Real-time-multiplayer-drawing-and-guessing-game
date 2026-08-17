@@ -24,7 +24,7 @@ export default function TurnResultBoard({
             Turn Complete
           </p>
 
-          <h2 className="mt-1 text-3xl">
+          <h2 className="my-3 text-3xl">
             <span className="text-[#93949F]">Answer is: </span>
             <span className="font-bold capitalize">{word}</span>
           </h2>

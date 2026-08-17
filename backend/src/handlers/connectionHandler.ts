@@ -40,7 +40,7 @@ export async function connectionHandler(socket: Socket, io: Server) {
 
   registerGameEvents(io, socket);
 
-  socket.on("game:get-state", (socket) => gameStateHandler(socket));
+  socket.on("game:get-state", () => gameStateHandler(socket));
 
   socket.on("disconnect", async () => {
     await removePlayer(socket.id);

@@ -59,7 +59,7 @@ export default function WordSelectionModal({
         >
           <input
             type="text"
-            placeholder="enter a custom word"
+            placeholder="Enter a custom word"
             required
             onChange={(e) => setInputWord(e.target.value)}
             className="min-w-0 flex-1 rounded-full border border-[#E6E7F0] bg-[#FAFAFC] px-4 py-2 text-sm text-[#15151A] outline-none transition-colors focus:border-[#5B5FEF] focus:bg-white focus:ring-4 focus:ring-[#5B5FEF]/15"

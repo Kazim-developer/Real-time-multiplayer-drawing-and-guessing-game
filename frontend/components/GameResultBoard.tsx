@@ -22,7 +22,7 @@ export default function GameResultBoard({ players }: GameResultBoardProps) {
             Game Complete
           </p>
 
-          <h2 className="mt-1 text-3xl font-bold text-[#15151A]">
+          <h2 className="my-3 text-3xl font-bold text-[#15151A]">
             Final Results
           </h2>
 
